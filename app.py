@@ -50,6 +50,8 @@ html,body{{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Rob
 h1{{margin:0 0 6px 0;font-size:22px}}
 p{{margin:0 0 10px 0;line-height:1.4}}
 pre{{font-family:monospace;}}
+a.cta{{display:inline-block; background:var(--green-darker); color:white; padding:8px 12px; border-radius:8px; text-decoration:none; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,0.08);}}
+a.cta:hover{{filter:brightness(1.06);}}
 @media (max-width:560px){{.card{{grid-template-columns:1fr;align-items:start}} .avatar{{margin:0 auto}} .details{{background:transparent;padding:0}}}}
 </style>
 </head>
@@ -68,6 +70,7 @@ pre{{font-family:monospace;}}
             </pre>
             <p>MySQL says: {result[0]}</p>
             <p>Server time: {current_time[0]}</p>
+            <p><a class="cta" href="/data-analysis" target="_blank">View Data Analysis</a></p>
         </div>
     </section>
 </div>
