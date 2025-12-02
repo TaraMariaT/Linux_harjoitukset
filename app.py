@@ -64,13 +64,16 @@ a.cta:hover{{filter:brightness(1.06);}}
             <p>This small site demonstrates a Flask app connecting to MySQL.</p>
             <pre>
  _._     _,-'""`-._
-(,-.`._,'(       |\\`-/|
-    `-.-' \\ )-`( , o o)
-          `-    \\`_`"'- 
+(,-.`._,'(       |\`-/|
+    `-.-' \ )-`( , o o)
+          `-    \`_`"'- 
             </pre>
             <p>MySQL says: {result[0]}</p>
             <p>Server time: {current_time[0]}</p>
-            <p><a class="cta" href="/data-analysis" target="_blank">View Data Analysis</a></p>
+            <p>
+                <a class="cta" href="/data-analysis" target="_blank">View Data Analysis</a>
+                <a class="cta" href="/chat" target="_blank">Open Chat</a>
+            </p>
         </div>
     </section>
 </div>

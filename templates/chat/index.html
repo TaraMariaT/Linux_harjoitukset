@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MQTT Chat</title>
+  <style>
+    :root {
+      --green-main: rgba(33, 248, 147, 0.9);
+      --green-darker: rgba(22, 180, 110, 0.95);
+      --green-lighter: rgba(104, 255, 193, 0.95);
+      --green-pale: rgba(255, 255, 255, 0.9);
+      --text: #08331f;
+      --muted-shadow: rgba(8,51,31,0.08);
+    }
+    html, body { height: 100%; margin: 0; font-family: system-ui,Segoe UI,Arial; background: var(--green-main); color: var(--text); }
+    .wrap { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 40px; }
+    .card { background: var(--green-lighter); border-radius: 12px; padding: 22px; max-width: 800px; width: 100%; box-shadow: 0 8px 30px var(--muted-shadow); }
+    h1 { margin: 0 0 10px 0; font-size: 24px; text-align: center; }
+    #log { background: var(--green-pale); color: #000; padding: 12px; height: 350px; overflow: auto; border-radius: 8px; margin-bottom: 12px; }
+    .row { display: flex; gap: 8px; margin-top: 8px; }
+    input, button { padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
+    .nickname { width: 120px; }
+    .text { flex: 1; }
+    #status { margin-bottom: 10px; font-weight: 600; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <h1>MQTT Chat</h1>
+      <div id="status">Status: <span id="statusDot">🔴</span></div>
+      <div id="log"></div>
+      <div class="row">
+        <input id="nickname" class="nickname" placeholder="Nick" value="Browser">
+        <input id="message" class="text" placeholder="Write message...">
+        <button id="send">Send</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script>
+    const statusDot = document.getElementById('statusDot');
+    const log = document.getElementById('log');
+    const nick = document.getElementById('nickname');
+    const msg = document.getElementById('message');
+    const sendBtn = document.getElementById('send');
+
+    // --- FETCH LAST 10 MESSAGES ON PAGE LOAD ---
+    fetch('/chat/api/messages?limit=10')
+      .then(resp => resp.json())
+      .then(arr => {
+        arr.forEach(data => {
+          const time = data.created_at ? new Date(data.created_at).toLocaleString() : '';
+          const content = data.message || data.text || '';
+          const line = `<div><b>${data.nickname}</b> ${time}: ${content}</div>`;
+          log.innerHTML += line;
+        });
+        log.scrollTop = log.scrollHeight;
+      })
+      .catch(err => console.warn('API fetch failed', err));
+
+    // --- CONNECT TO MQTT ---
+    const client = mqtt.connect((location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/mqtt");
+
+    client.on('connect', () => {
+      statusDot.textContent = '🟢';
+      client.subscribe('chat/messages');
+    });
+
+    client.on('message', (topic, payload) => {
+      try {
+        const data = JSON.parse(payload.toString());
+        const time = data.timestamp ? new Date(data.timestamp).toLocaleString() : '';
+        const line = `<div><b>${data.nickname}</b> ${time}: ${data.message || data.text}</div>`;
+        log.innerHTML += line;
+        log.scrollTop = log.scrollHeight;
+      } catch (e) {
+        console.warn('Bad message', e);
+      }
+    });
+
+    sendBtn.addEventListener('click', () => {
+      const payload = {
+        nickname: nick.value || 'Browser',
+        text: msg.value || '',
+        clientId: 'browser_' + Math.floor(Math.random()*10000),
+        timestamp: Date.now()
+      };
+      client.publish('chat/messages', JSON.stringify(payload));
+      msg.value = '';
+    });
+  </script>
+</body>
+</html>
