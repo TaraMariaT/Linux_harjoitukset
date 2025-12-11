@@ -27,7 +27,6 @@ html, body {
 .wrap {
     min-height: 100%;
     display: flex;
-    align-items: center;
     justify-content: center;
     padding: 40px;
 }
@@ -36,12 +35,9 @@ html, body {
     background: var(--green-lighter);
     border-radius: 12px;
     padding: 22px;
-    max-width: 820px;
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 18px;
+    max-width: 860px;
+    width: 100%;
     box-shadow: 0 8px 30px var(--muted-shadow);
-    outline: 1px solid rgba(0,0,0,0.04);
 }
 
 .avatar {
@@ -49,28 +45,13 @@ html, body {
     height: 110px;
     border-radius: 10px;
     background: var(--green-darker);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     color: white;
     font-weight: 700;
     font-size: 42px;
-}
-
-.details {
-    background: linear-gradient(var(--green-pale), transparent);
-    padding: 10px 14px;
-    border-radius: 8px;
-}
-
-h1 {
-    margin: 0 0 6px 0;
-    font-size: 22px;
-}
-
-p {
-    margin: 0 0 10px 0;
-    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
 }
 
 button {
@@ -91,25 +72,75 @@ button:hover {
 
 #result {
     margin-top: 18px;
-    padding: 14px;
-    background: var(--green-pale);
-    border-radius: 6px;
-    white-space: pre-wrap;
-    box-shadow: inset 0 0 6px rgba(0,0,0,0.05);
 }
 
-@media (max-width: 560px) {
-    .card {
-        grid-template-columns: 1fr;
-        align-items: start;
-    }
-    .avatar {
-        margin: 0 auto;
-    }
-    .details {
-        background: transparent;
-        padding: 0;
-    }
+/*** CAT CARD STYLES ***/
+
+.cat-card {
+    display: flex;
+    background: var(--green-pale);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    gap: 16px;
+}
+
+.cat-img {
+    width: 160px;
+    height: 160px;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.cat-info h3 {
+    margin: 0 0 6px;
+}
+
+.vote-row {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.vote-count {
+    background: white;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.1);
+}
+
+.vote-btn {
+    background: var(--green-darker);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.vote-btn:hover {
+    filter: brightness(1.1);
+}
+
+/* Voting animation */
+.vote-btn.voted {
+    transform: scale(1.18);
+    background: #ff4d6d !important; /* Pink highlight */
+}
+
+/*** BAR CHART ***/
+
+.chart-container {
+    margin-top: 25px;
+    padding: 16px;
+    background: var(--green-pale);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 </style>
 </head>
@@ -117,39 +148,31 @@ button:hover {
 <body>
 <div class="wrap">
     <section class="card">
-        <div class="avatar">☸️</div>
 
-        <div class="details">
-            <h1>Kubernetes LEMP Application</h1>
-            <p>This UI communicates with your Kubernetes backend and MySQL pod.</p>
+        <div class="avatar">🐾</div>
 
-            <div>
-                <button onclick="checkHealth()">Check Backend Health</button>
-                <button onclick="initDB()">Initialize Database</button>
-                <button onclick="getUsers()">Get Users</button>
-            </div>
+        <h1>Kubernetes LEMP Application</h1>
+        <p>This UI communicates with your Kubernetes backend and MySQL pod.</p>
 
-            <div id="result">Click a button to begin…</div>
+        <!-- Buttons -->
+        <div>
+            <button onclick="checkHealth()">Check Backend Health</button>
+            <button onclick="initDB()">Initialize DB</button>
+            <button onclick="getUsers()">Get Users</button>
+            <button onclick="showCats()">Show Cats</button>
         </div>
+
+        <div id="result">Click a button to begin…</div>
+
     </section>
 </div>
 
 <script>
 const resultDiv = document.getElementById("result");
 
-async function checkHealth() {
-    await callApi("api/health", "Backend Health");
-}
+/* ---- Helper API function ---- */
 
-async function initDB() {
-    await callApi("api/init-db", "Init DB");
-}
-
-async function getUsers() {
-    await callApi("api/users", "Users");
-}
-
-async function callApi(endpoint, label) {
+async function apiCall(endpoint, label) {
     try {
         const response = await fetch(endpoint);
         const data = await response.json();
@@ -158,7 +181,112 @@ async function callApi(endpoint, label) {
         resultDiv.textContent = "Error: " + err.message;
     }
 }
-</script>
 
+async function checkHealth() { apiCall("/kube/api/health", "Backend Health"); }
+async function initDB() { apiCall("/kube/api/init-db", "Init DB"); }
+async function getUsers() { apiCall("/kube/api/users", "Users"); }
+
+
+/* ---- Show Cats + Chart ---- */
+
+async function showCats() {
+    try {
+        const response = await fetch("/kube/api/cats");
+        const cats = await response.json();
+
+        let html = `<h2>Cats</h2>`;
+
+        // Create cards
+        cats.forEach(cat => {
+            const imgPath = `/kube/images/${cat.name}.jpg`;
+
+            html += `
+            <div class="cat-card">
+                <img src="${imgPath}" class="cat-img">
+
+                <div class="cat-info">
+                    <h3>${cat.name}</h3>
+                    <p><strong>Age:</strong> ${cat.age}</p>
+                    <p><strong>Food:</strong> ${cat.favorite_food}</p>
+                    <p><strong>Personality:</strong> ${cat.personality}</p>
+                    <p><strong>Weight:</strong> ${cat.weight_kg} kg</p>
+
+                    <div class="vote-row">
+                        <span class="vote-count" id="votes-${cat.id}">${cat.votes} votes</span>
+                        <button class="vote-btn" onclick="voteCat(${cat.id})">Vote ❤️</button>
+                    </div>
+                </div>
+            </div>`;
+        });
+
+        // Chart area
+        html += `
+            <div class="chart-container">
+                <h3>Votes Chart</h3>
+                <canvas id="votesChart" width="600" height="300"></canvas>
+            </div>
+        `;
+
+        resultDiv.innerHTML = html;
+
+        drawVotesChart(cats);
+
+    } catch (err) {
+        resultDiv.textContent = "Error: " + err.message;
+    }
+}
+
+
+/* ---- Vote for a cat ---- */
+
+async function voteCat(id) {
+    try {
+        const button = document.querySelector(`button[onclick="voteCat(${id})"]`);
+        button.classList.add("voted");
+        setTimeout(() => button.classList.remove("voted"), 300);
+
+        await fetch(`/kube/api/vote/${id}`, { method: "POST" });
+        showCats();
+
+    } catch (err) {
+        resultDiv.textContent = "Error: " + err.message;
+    }
+}
+
+
+/* ---- Draw Bar Chart ---- */
+
+function drawVotesChart(cats) {
+    const canvas = document.getElementById("votesChart");
+    const ctx = canvas.getContext("2d");
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const maxVotes = Math.max(...cats.map(c => c.votes), 1);
+    const barWidth = 120;
+    const gap = 40;
+    const baseY = 260;
+
+    cats.forEach((cat, i) => {
+        const barHeight = (cat.votes / maxVotes) * 200;
+
+        const x = i * (barWidth + gap) + 50;
+
+        // Bar
+        ctx.fillStyle = "rgba(22, 180, 110, 0.85)";
+        ctx.fillRect(x, baseY - barHeight, barWidth, barHeight);
+
+        // Name
+        ctx.fillStyle = "#08331f";
+        ctx.font = "16px sans-serif";
+        ctx.fillText(cat.name, x + 10, baseY + 20);
+
+        // Votes
+        ctx.font = "14px bold sans-serif";
+        ctx.fillText(cat.votes + " votes", x + 10, baseY - barHeight - 8);
+    });
+}
+
+</script>
 </body>
 </html>
