@@ -95,3 +95,7 @@ ALTER TABLE users ADD UNIQUE(email);
 ---
 
 # 5. CI/CD Application
+
+- Custom UI styling to match other course assignments
+- CI/CD pipeline using GitHub Actions
+- Reverse proxied under /cicd

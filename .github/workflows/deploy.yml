@@ -24,10 +24,6 @@ jobs:
       - name: Install backend dependencies
         run: pip install -r cicd-app/backend/requirements.txt
 
-      # (Optional) Run backend tests
-      # - name: Run backend tests
-      #   run: python cicd-app/backend/test_app.py
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
