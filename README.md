@@ -92,3 +92,6 @@ Includes support for cat images and ensures no duplicate users via:
 ```sql
 ALTER TABLE users ADD UNIQUE(email);
 
+---
+
+# 5. CI/CD Application
