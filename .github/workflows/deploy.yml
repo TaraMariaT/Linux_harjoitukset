@@ -76,16 +76,6 @@ jobs:
             sudo mkdir -p /opt/lemp/db/init
             sudo chown -R ubuntu:ubuntu /opt/lemp
 
-      - name: Copy init.sql to VM
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: 22
-          source: cicd-app/db/init/init.sql
-          target: /opt/lemp/db/init/
-
       - name: Copy docker-compose.prod.yml to /tmp
         uses: appleboy/scp-action@v0.1.4
         with:
