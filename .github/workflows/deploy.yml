@@ -94,7 +94,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           source: cicd-app/docker-compose.prod.yml
-          target: /opt/lemp/docker-compose.yml
+          target: /opt/lemp/
 
   deploy:
     runs-on: ubuntu-latest
