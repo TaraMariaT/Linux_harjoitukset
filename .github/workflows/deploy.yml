@@ -104,8 +104,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           script: |
-            sudo rm -rf /opt/lemp/docker-compose.yml
-            sudo cp /tmp/docker-compose.prod.yml /opt/lemp/docker-compose.yml
+            sudo mkdir -p /opt/lemp
+            sudo cp /tmp/cicd-app/docker-compose.prod.yml /opt/lemp/docker-compose.yml
 
   deploy:
     runs-on: ubuntu-latest
