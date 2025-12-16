@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>CI/CD LEMP App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+:root {
+  --green-main: rgba(33, 248, 147, 0.9);
+  --green-darker: rgba(22, 180, 110, 0.95);
+  --green-lighter: rgba(104, 255, 193, 0.95);
+  --green-pale: rgba(255, 255, 255, 0.9);
+  --text: #08331f;
+  --shadow: rgba(8,51,31,0.12);
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  background: var(--green-main);
+  color: var(--text);
+}
+
+.wrap {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.card {
+  background: var(--green-lighter);
+  border-radius: 14px;
+  padding: 24px;
+  max-width: 640px;
+  width: 100%;
+  box-shadow: 0 10px 30px var(--shadow);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  background: var(--green-darker);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  color: white;
+}
+
+h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+p {
+  margin: 6px 0 12px;
+  line-height: 1.4;
+}
+
+.box {
+  background: var(--green-pale);
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 10px;
+  font-family: monospace;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.06);
+}
+
+.status {
+  font-weight: 700;
+  margin-top: 14px;
+}
+
+.footer {
+  margin-top: 20px;
+  font-size: 13px;
+  opacity: 0.85;
+  text-align: center;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <section class="card">
+    <div class="header">
+      <div class="avatar">🧪</div>
+      <div>
+        <h1>CI/CD Application</h1>
+        <p>Auto-deployed with GitHub Actions</p>
+      </div>
+    </div>
+
+    <div class="status">Backend status:</div>
+    <div id="health" class="box">Checking…</div>
+
+    <div class="status">Server time:</div>
+    <div id="time" class="box">Loading…</div>
+
+    <div class="status">Database message:</div>
+    <div id="msg" class="box">Loading…</div>
+
+    <div class="status">Container runtime info:</div>
+    <div id="info" class="box">Loading…</div>
+
+    <div class="footer">
+      Reverse proxied via Nginx · <strong>/cicd</strong>
+    </div>
+  </section>
+</div>
+
+<script>
+fetch('/cicd/api/health')
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById('health').textContent =
+      d.message?.status || JSON.stringify(d);
+  })
+  .catch(() => {
+    document.getElementById('health').textContent = 'Error';
+  });
+
+fetch('/cicd/api/time')
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById('time').textContent =
+      d.message?.time || JSON.stringify(d);
+  })
+  .catch(() => {
+    document.getElementById('time').textContent = 'Error';
+  });
+
+fetch('/cicd/api')
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById('msg').textContent =
+      d.message || JSON.stringify(d);
+  })
+  .catch(() => {
+    document.getElementById('msg').textContent = 'Error';
+  });
+
+/* runtime info */
+fetch('/cicd/api/info')
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById('info').textContent =
+      `Host: ${d.hostname}
+Python: ${d.python_version}
+Uptime: ${d.uptime_seconds}s
+DB Host: ${d.db_host}`;
+  })
+  .catch(() => {
+    document.getElementById('info').textContent = 'Error';
+  });
+</script>
+
+</body>
+</html>
