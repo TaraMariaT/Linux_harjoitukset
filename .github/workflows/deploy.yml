@@ -86,7 +86,7 @@ jobs:
           source: cicd-app/db/init/init.sql
           target: /opt/lemp/db/init/
 
-      - name: Copy docker-compose.prod.yml to VM as docker-compose.yml
+      - name: Copy docker-compose.prod.yml to /tmp
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -94,7 +94,18 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           source: cicd-app/docker-compose.prod.yml
-          target: /opt/lemp/
+          target: /tmp/
+
+      - name: Move docker-compose to /opt/lemp
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          script: |
+            sudo rm -rf /opt/lemp/docker-compose.yml
+            sudo cp /tmp/docker-compose.prod.yml /opt/lemp/docker-compose.yml
 
   deploy:
     runs-on: ubuntu-latest
